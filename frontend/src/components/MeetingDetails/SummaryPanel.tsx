@@ -266,16 +266,17 @@ export function SummaryPanel({
             />
           </div>
 
-          {hasSummary && !isSummaryLoading && (
+          {(hasSummary && !isSummaryLoading) || transcripts.length > 0 ? (
             <div className="flex-shrink-0">
               <SummaryUpdaterButtonGroup
                 isSaving={isSaving}
                 isDirty={isSummaryDirty}
+                meetingId={meeting.id}
                 onSave={onSaveAll}
                 onCopy={onCopySummary}
               />
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 

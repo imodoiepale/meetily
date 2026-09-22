@@ -7,6 +7,82 @@ import { invoke } from "@tauri-apps/api/core"
 import Analytics from "@/lib/analytics"
 import AnalyticsConsentSwitch from "./AnalyticsConsentSwitch"
 import { useConfig, NotificationSettings } from "@/contexts/ConfigContext"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
+import { Button } from "./ui/button"
+import { toast } from "sonner"
+
+function CityWalkConnectionSettings() {
+  const [ingestUrl, setIngestUrl] = useState("")
+  const [ingestSecret, setIngestSecret] = useState("")
+  const [meetingType, setMeetingType] = useState("other")
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    invoke<{ ingest_url?: string; ingest_secret?: string; meeting_type?: string }>("citywalk_get_config")
+      .then((config) => {
+        setIngestUrl(config.ingest_url || "")
+        setIngestSecret(config.ingest_secret || "")
+        setMeetingType(config.meeting_type || "other")
+      })
+      .catch(console.error)
+  }, [])
+
+  const save = async () => {
+    setSaving(true)
+    try {
+      await invoke("citywalk_save_config", { ingestUrl, ingestSecret, meetingType })
+      toast.success("CityWalk connection saved")
+    } catch (error) {
+      toast.error(String(error) || "Could not save CityWalk connection")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4">
+      <h3 className="text-lg font-semibold text-gray-900">CityWalk Task Manager</h3>
+      <p className="text-sm text-gray-600">
+        Send transcripts and minutes to the CityWalk meetings hub. The secret is the same value as MEETINGS_INGEST_SECRET on the server.
+      </p>
+      <div className="space-y-2">
+        <Label>Ingest URL</Label>
+        <Input
+          value={ingestUrl}
+          onChange={(e) => setIngestUrl(e.target.value)}
+          placeholder="https://tasks.citywalk.co.ke"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label>Ingest secret</Label>
+        <Input
+          type="password"
+          value={ingestSecret}
+          onChange={(e) => setIngestSecret(e.target.value)}
+          placeholder="Shared secret"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label>Default meeting type</Label>
+        <select
+          className="w-full border rounded-md h-9 px-2 text-sm"
+          value={meetingType}
+          onChange={(e) => setMeetingType(e.target.value)}
+        >
+          <option value="department">Department</option>
+          <option value="department_heads">Department heads</option>
+          <option value="visitors">Visitors</option>
+          <option value="all_staff">All staff</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <Button type="button" onClick={() => void save()} disabled={saving}>
+        {saving ? "Saving..." : "Save connection"}
+      </Button>
+    </div>
+  )
+}
 
 export function PreferenceSettings() {
   const {
@@ -163,7 +239,7 @@ export function PreferenceSettings() {
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Storage Locations</h3>
         <p className="text-sm text-gray-600 mb-6">
-          View and access where Meetily stores your data
+          View and access where CityWalk Meetings stores your data
         </p>
 
         <div className="space-y-4">
@@ -219,6 +295,8 @@ export function PreferenceSettings() {
           </p>
         </div>
       </div>
+
+      <CityWalkConnectionSettings />
 
       {/* Analytics Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">

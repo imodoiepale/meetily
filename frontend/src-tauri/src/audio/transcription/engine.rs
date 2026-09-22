@@ -135,10 +135,22 @@ pub async fn validate_transcription_model_ready<R: Runtime>(app: &AppHandle<R>) 
                 }
             }
         }
+        "groq" | "deepgram" => {
+            let key = config.api_key.as_deref().unwrap_or("").trim();
+            if key.is_empty() {
+                warn!("❌ Cloud STT provider '{}' is missing an API key", config.provider);
+                return Err(format!(
+                    "Provider '{}' needs an API key. Add it in transcript settings.",
+                    config.provider
+                ));
+            }
+            info!("✅ Cloud STT provider '{}' is configured", config.provider);
+            Ok(())
+        }
         other => {
-            warn!("❌ Unsupported transcription provider for local recording: {}", other);
+            warn!("❌ Unsupported transcription provider for recording: {}", other);
             Err(format!(
-                "Provider '{}' is not supported for local transcription. Please select 'localWhisper' or 'parakeet'.",
+                "Provider '{}' is not supported. Please select Parakeet, Local Whisper, Groq, or Deepgram.",
                 other
             ))
         }
@@ -211,6 +223,36 @@ pub async fn get_or_init_transcription_engine<R: Runtime>(
                     Err("Parakeet engine not initialized. This should not happen after validation.".to_string())
                 }
             }
+        }
+        "groq" => {
+            let key = config
+                .api_key
+                .clone()
+                .unwrap_or_default()
+                .trim()
+                .to_string();
+            if key.is_empty() {
+                return Err("Groq transcription needs an API key.".to_string());
+            }
+            info!("☁️ Initializing Groq Whisper transcription engine");
+            Ok(TranscriptionEngine::Provider(Arc::new(
+                super::GroqWhisperProvider::new(key, config.model),
+            )))
+        }
+        "deepgram" => {
+            let key = config
+                .api_key
+                .clone()
+                .unwrap_or_default()
+                .trim()
+                .to_string();
+            if key.is_empty() {
+                return Err("Deepgram transcription needs an API key.".to_string());
+            }
+            info!("☁️ Initializing Deepgram transcription engine");
+            Ok(TranscriptionEngine::Provider(Arc::new(
+                super::DeepgramProvider::new(key, config.model),
+            )))
         }
         "localWhisper" | _ => {
             info!("🎤 Initializing Whisper transcription engine");

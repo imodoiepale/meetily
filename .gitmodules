@@ -2,3 +2,6 @@
 	path = backend/whisper.cpp
 	url = https://github.com/Zackriya-Solutions/whisper.cpp
 	branch = develop
+[submodule "vendor/openwhispr"]
+	path = vendor/openwhispr
+	url = https://github.com/OpenWhispr/openwhispr.git

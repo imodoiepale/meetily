@@ -25,6 +25,13 @@ export function getProviderCommands(provider: string): ProviderCommands | null {
   return PROVIDER_COMMANDS[provider] ?? null;
 }
 
+const CLOUD_STT_PROVIDERS = new Set(['groq', 'deepgram']);
+
+/** Cloud STT does not download a local model; an API key is enough. */
+export function isCloudSttProvider(provider: string): boolean {
+  return CLOUD_STT_PROVIDERS.has(provider);
+}
+
 export function hasDownloadingModel(models: ModelWithStatus[]): boolean {
   return models.some(({ status }) => (
     status === 'Downloading'

@@ -10,12 +10,13 @@ import { showRecordingNotification } from '@/lib/recordingNotification';
 import {
   getProviderCommands,
   hasDownloadingModel,
+  isCloudSttProvider,
   type ModelWithStatus,
 } from '@/lib/transcription-model-readiness';
 import { toast } from 'sonner';
 
 const TRANSCRIPTION_RUNTIME_START_ERROR_CODE = 'TRANSCRIPTION_RUNTIME_INITIALIZATION_FAILED';
-const TRANSCRIPTION_RUNTIME_USER_MESSAGE = 'Speech recognition could not initialize. Restart Meetily. If the problem continues, repair or reinstall the app.';
+const TRANSCRIPTION_RUNTIME_USER_MESSAGE = 'Speech recognition could not initialize. Restart CityWalk Meetings. If the problem continues, repair or reinstall the app.';
 
 const isTranscriptionRuntimeStartError = (error: unknown) =>
   String(error) === TRANSCRIPTION_RUNTIME_START_ERROR_CODE;
@@ -82,6 +83,10 @@ export function useRecordingStart(
   const checkTranscriptionModelReady = useCallback(async (): Promise<boolean> => {
     try {
       const provider = await getTranscriptionProvider();
+      if (isCloudSttProvider(provider)) {
+        return true;
+      }
+
       const commands = getProviderCommands(provider);
 
       if (commands) {

@@ -291,7 +291,8 @@ impl ParakeetEngine {
                 dirs::data_dir()
                     .or_else(|| dirs::home_dir())
                     .ok_or_else(|| anyhow!("Could not find system data directory"))?
-                    .join("Meetily")
+                    .join("CityWalk")
+                    .join("Meetings")
                     .join("models")
                     .join("parakeet")
             }

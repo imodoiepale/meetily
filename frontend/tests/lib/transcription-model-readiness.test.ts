@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   getProviderCommands,
   hasDownloadingModel,
+  isCloudSttProvider,
 } from '../../src/lib/transcription-model-readiness';
 
 describe('transcription model readiness', () => {
@@ -24,6 +25,13 @@ describe('transcription model readiness', () => {
 
   test('does not silently treat an unsupported provider as Parakeet', () => {
     expect(getProviderCommands('deepgram')).toBeNull();
+    expect(getProviderCommands('groq')).toBeNull();
+  });
+
+  test('treats Groq and Deepgram as cloud STT that skip local model downloads', () => {
+    expect(isCloudSttProvider('groq')).toBeTrue();
+    expect(isCloudSttProvider('deepgram')).toBeTrue();
+    expect(isCloudSttProvider('parakeet')).toBeFalse();
   });
 
   test('recognizes only active downloads', () => {

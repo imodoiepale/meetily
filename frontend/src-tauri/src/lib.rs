@@ -38,6 +38,7 @@ pub(crate) use perf_trace;
 pub mod analytics;
 pub mod api;
 pub mod audio;
+pub mod citywalk;
 pub mod config;
 pub mod console_utils;
 pub mod database;
@@ -735,6 +736,9 @@ pub fn run() {
             api::test_backend_connection,
             api::debug_backend_connection,
             api::open_external_url,
+            citywalk::citywalk_get_config,
+            citywalk::citywalk_save_config,
+            citywalk::citywalk_publish_meeting,
             // Custom OpenAI commands
             api::api_save_custom_openai_config,
             api::api_get_custom_openai_config,

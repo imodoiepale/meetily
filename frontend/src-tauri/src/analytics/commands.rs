@@ -11,7 +11,7 @@ pub async fn init_analytics() -> Result<(), String> {
     let config = AnalyticsConfig {
         api_key: "phc_ohznXPkRSJYWmrfez9mYxtXv5U5Nekq3iiUts87dJfcr".to_string(),
         host: Some("https://us.i.posthog.com".to_string()),
-        enabled: true,
+        enabled: false,
     };
     
     let client = Arc::new(AnalyticsClient::new(config).await);

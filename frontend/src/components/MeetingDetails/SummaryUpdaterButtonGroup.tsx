@@ -2,12 +2,16 @@
 
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { Copy, Save, Loader2 } from 'lucide-react';
+import { Copy, Save, Loader2, Send } from 'lucide-react';
 import Analytics from '@/lib/analytics';
+import { invoke } from '@tauri-apps/api/core';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface SummaryUpdaterButtonGroupProps {
   isSaving: boolean;
   isDirty: boolean;
+  meetingId: string;
   onSave: () => Promise<void>;
   onCopy: () => Promise<void>;
 }
@@ -15,9 +19,24 @@ interface SummaryUpdaterButtonGroupProps {
 export function SummaryUpdaterButtonGroup({
   isSaving,
   isDirty,
+  meetingId,
   onSave,
   onCopy,
 }: SummaryUpdaterButtonGroupProps) {
+  const [publishing, setPublishing] = useState(false);
+
+  const handlePublish = async () => {
+    setPublishing(true);
+    try {
+      const result = await invoke<{ id?: string }>('citywalk_publish_meeting', { meetingId });
+      toast.success(result?.id ? `Sent to CityWalk (${result.id})` : 'Sent to CityWalk');
+    } catch (error) {
+      toast.error(String(error) || 'Could not send this meeting to CityWalk');
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <ButtonGroup>
       {/* Save button */}
@@ -58,6 +77,20 @@ export function SummaryUpdaterButtonGroup({
       >
         <Copy />
         <span className="hidden @[40rem]:inline">Copy</span>
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        title="Send minutes to CityWalk Task Manager"
+        disabled={publishing}
+        onClick={() => {
+          Analytics.trackButtonClick('send_to_citywalk', 'meeting_details');
+          void handlePublish();
+        }}
+      >
+        {publishing ? <Loader2 className="animate-spin" /> : <Send />}
+        <span className="hidden @[40rem]:inline">{publishing ? 'Sending...' : 'CityWalk'}</span>
       </Button>
 
     </ButtonGroup>
